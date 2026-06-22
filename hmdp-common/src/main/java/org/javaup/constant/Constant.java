@@ -4,7 +4,7 @@ public class Constant {
     
     public static final String PREFIX_DISTINCTION_NAME = "prefix.distinction.name";
     
-    public static final String DEFAULT_PREFIX_DISTINCTION_NAME = "hmdp";
+    public static final String DEFAULT_PREFIX_DISTINCTION_NAME = "flashshop";
     
     public static final String SPRING_INJECT_PREFIX_DISTINCTION_NAME = "${"+PREFIX_DISTINCTION_NAME+":"+DEFAULT_PREFIX_DISTINCTION_NAME+"}";
     
@@ -16,5 +16,5 @@ public class Constant {
     
     public static final String BLOOM_FILTER_HANDLER_VOUCHER = "voucher";
     
-    public static final String DELAY_VOUCHER_REMINDER ="h_delay_voucher_reminder";
+    public static final String DELAY_VOUCHER_REMINDER = "delay_voucher_reminder";
 }

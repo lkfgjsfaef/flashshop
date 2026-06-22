@@ -177,7 +177,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     
     @PostConstruct
     private void init(){
-        // 这是黑马点评的普通版本，升级版本中不再使用此方式
+        // 旧版基于 Redis Stream 的消费方式，Plus 版本已替换为 Kafka
         //SECKILL_ORDER_EXECUTOR.submit(new VoucherOrderHandler());
     }
 

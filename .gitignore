@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 logs/
+*.log
+*.log.gz
 
 **/dependency-reduced-pom.xml
 
@@ -22,9 +24,9 @@ logs/
 *.iws
 *.iml
 *.ipr
-*.log
 *.hprof
 .flattened-pom.xml
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -38,5 +40,18 @@ build/
 ### VS Code ###
 .vscode/
 
+### Docker volumes ###
+docker/mysql-data/
+docker/redis-data/
+
+### Environment files ###
+.env
+.env.local
+.env.*.local
+
 CLAUDE.md
 .claude/
+项目简历描述.md
+JMeter压测.md
+*.tmp
+*.bak

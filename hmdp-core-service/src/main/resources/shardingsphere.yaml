@@ -3,33 +3,31 @@ dataSources:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
     jdbcUrl: jdbc:mysql://127.0.0.1:3306/hmdp_0?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&autoReconnect=true
-    username: root
-    password: 123456
+    username: ${MYSQL_USER:-root}
+    password: ${MYSQL_PASSWORD:-123456}
     hikari:
-      # 连接池配置优化
-      minimum-idle: 30                    # 最小空闲连接数(提升至30)
-      maximum-pool-size: 100              # 最大连接池大小(提升至100)
-      connection-timeout: 20000           # 连接超时时间(缩短至20秒)
-      idle-timeout: 300000                # 空闲连接超时时间(5分钟)
-      max-lifetime: 1800000               # 连接最大生命周期(30分钟)
-      leak-detection-threshold: 30000     # 连接泄漏检测阈值(30秒)
-      validation-timeout: 5000            # 连接验证超时时间(5秒)
+      minimum-idle: 30
+      maximum-pool-size: 100
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 30000
+      validation-timeout: 5000
   ds_1:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
     jdbcUrl: jdbc:mysql://127.0.0.1:3306/hmdp_1?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&autoReconnect=true
-    username: root
-    password: 123456
+    username: ${MYSQL_USER:-root}
+    password: ${MYSQL_PASSWORD:-123456}
     hikari:
-      # 连接池配置优化
-      minimum-idle: 30                    # 最小空闲连接数(提升至30)
-      maximum-pool-size: 100              # 最大连接池大小(提升至100)
-      connection-timeout: 20000           # 连接超时时间(缩短至20秒)
-      idle-timeout: 300000                # 空闲连接超时时间(5分钟)
-      max-lifetime: 1800000               # 连接最大生命周期(30分钟)
-      leak-detection-threshold: 30000     # 连接泄漏检测阈值(30秒)
-      validation-timeout: 5000            # 连接验证超时时间(5秒)
-    
+      minimum-idle: 30
+      maximum-pool-size: 100
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      leak-detection-threshold: 30000
+      validation-timeout: 5000
+
 rules:
   - !SHARDING
     tables:

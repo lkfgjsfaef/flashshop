@@ -548,7 +548,7 @@ onMounted(() => {
 
     <div class="shop-divider"></div>
 
-    <div class="copyright">copyright ©2021 hmdp.com</div>
+    <div class="copyright">Copyright &copy; {{ new Date().getFullYear() }} FlashShop</div>
   </div>
 </template>
 
