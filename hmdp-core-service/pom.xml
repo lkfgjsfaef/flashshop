@@ -13,7 +13,7 @@
     <artifactId>hmdp-core-service</artifactId>
 
     <name>hmdp-core-service</name>
-    <description>黑马点评核心服务</description>
+    <description>FlashShop 核心服务模块</description>
     <dependencies>
         <dependency>
             <groupId>org.javaup</groupId>

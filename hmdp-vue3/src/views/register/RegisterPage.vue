@@ -10,8 +10,7 @@ const formRef = ref()
 import { userGetCode, userLogin } from '@/api/user'
 
 const form = ref({
-  phone: '13686869696',
-  // phone: '13838411438',
+  phone: '',
   code: '',
   radio: ''
 })
@@ -143,7 +142,7 @@ const rules = {
           </el-form-item>
           <div>
             我已阅读并同意
-            <a href="javascript:void(0)"> 《黑马点评用户服务协议》</a>、
+            <a href="javascript:void(0)"> 《用户服务协议》</a>、
             <a href="javascript:void(0)">《隐私政策》</a>
             等，接受免除或者限制责任、诉讼管辖约定等粗体标示条款
           </div>
