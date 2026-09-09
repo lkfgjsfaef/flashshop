@@ -1,0 +1,213 @@
+# FlashShop CI/CD Pipeline
+# 单元测试 + API自动化测试 + 代码覆盖率 + 构建
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ==================== 阶段1：编译检查 ====================
+  compile:
+    name: Compile Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile project
+        run: mvn clean compile -DskipTests
+
+  # ==================== 阶段2：单元测试 + 覆盖率 ====================
+  unit-tests:
+    name: Unit Tests + Coverage
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run unit tests
+        run: mvn test -pl hmdp-core-service -Dtest="*Test" -DfailIfNoTests=false
+
+      - name: Generate JaCoCo coverage report
+        run: mvn jacoco:report -pl hmdp-core-service
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: hmdp-core-service/target/site/jacoco/jacoco.xml
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: hmdp-core-service/target/surefire-reports/
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: hmdp-core-service/target/site/jacoco/
+
+  # ==================== 阶段3：代码质量扫描 ====================
+  code-quality:
+    name: Code Quality Scan
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run SpotBugs
+        run: mvn spotbugs:check -pl hmdp-core-service -DskipTests
+
+      - name: Run Checkstyle
+        run: mvn checkstyle:check -pl hmdp-core-service -DskipTests
+
+  # ==================== 阶段4：API自动化测试 ====================
+  api-tests:
+    name: API Automation Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: test123
+          MYSQL_DATABASE: hmdp_test
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7.0
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Initialize database
+        run: |
+          mysql -h 127.0.0.1 -u root -ptest123 < sql/1_create_database.sql
+          mysql -h 127.0.0.1 -u root -ptest123 hmdp_test < sql/hmdp_0.sql
+          mysql -h 127.0.0.1 -u root -ptest123 hmdp_test < sql/hmdp_1.sql
+
+      - name: Run API tests
+        run: mvn test -pl hmdp-core-service -Dtest="*ApiTest" -DfailIfNoTests=false
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/hmdp_test
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: test123
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+
+      - name: Upload API test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-test-results
+          path: hmdp-core-service/target/surefire-reports/
+
+  # ==================== 阶段5：构建Docker镜像 ====================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [unit-tests, code-quality]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/flashshop:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/flashshop:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==================== 阶段6：部署到测试环境 ====================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # 这里可以添加实际的部署命令
+          # 例如：kubectl apply, docker-compose up, etc.

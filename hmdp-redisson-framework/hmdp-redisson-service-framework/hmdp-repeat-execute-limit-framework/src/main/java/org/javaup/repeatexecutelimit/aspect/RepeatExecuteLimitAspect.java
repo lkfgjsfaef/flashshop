@@ -24,6 +24,16 @@ import static org.javaup.repeatexecutelimit.constant.RepeatExecuteLimitConstant.
 import static org.javaup.repeatexecutelimit.constant.RepeatExecuteLimitConstant.SUCCESS_FLAG;
 
 /**
+ * 重复执行限制切面（防重复提交）
+ *
+ * 防护按顺序分三层：
+ * 1. 先查 Redis 里的执行标记位，命中说明已执行过，直接拒绝 —— 最快路径，挡住绝大部分重复请求；
+ * 2. 本地 ReentrantLock 尝试加锁，拿不到立即失败 —— 在本机并发层面先削一层；
+ * 3. Redisson 分布式公平锁 —— 保证集群范围内同一时刻只有一个请求真正执行；
+ * 4. 执行成功后按 durationTime 回写标记位，到期自动失效，不会永久锁死业务。
+ *
+ * 注意 finally 里保证本地锁一定释放，避免异常情况下死锁。
+ */
 @Slf4j
 @Aspect
 @Order(-11)

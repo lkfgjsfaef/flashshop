@@ -29,3 +29,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 本地备份文件（git 历史可回溯，无需入库）###
+*.bak

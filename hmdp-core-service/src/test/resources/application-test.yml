@@ -1,0 +1,45 @@
+# 测试环境配置 — 使用H2内存数据库，无需外部依赖
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+
+# 禁用ShardingSphere，测试环境直接用H2
+# 通过排除ShardingSphere自动配置来实现
+
+mybatis-plus:
+  type-aliases-package: org.javaup.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    local-cache-scope: statement
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+
+logging:
+  level:
+    org.javaup: DEBUG
+    org.mockito: DEBUG
+
+# 禁用布隆过滤器等外部依赖
+bloom-filter:
+  filters:
+    shop:
+      name: shop-id-bloom
+      expected-insertions: 100
+      false-probability: 0.01
+    voucher:
+      name: voucher-id-bloom
+      expected-insertions: 100
+      false-probability: 0.01

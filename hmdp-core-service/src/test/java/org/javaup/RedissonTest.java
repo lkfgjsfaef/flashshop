@@ -1,18 +1,31 @@
 package org.javaup;
 
 import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
+/**
+ * Redisson 分布式锁的手工验证用例（可重入性验证）。
+ *
+ * 这是集成测试：@SpringBootTest 会拉起完整上下文并连接真实的 Redis + MySQL，
+ * 本地没有这些中间件时无法运行，所以默认禁用。需要验证时手动去掉 @Disabled。
+ *
+ * 注：这里没有用 Lombok 的 @Slf4j，显式声明 Logger，
+ * 避免注解处理器未生效时编译报「找不到符号 log」。
+ */
+@Disabled("需要真实 Redis 环境，本地无中间件时跳过")
 @SpringBootTest
 class RedissonTest {
+
+    private static final Logger log = LoggerFactory.getLogger(RedissonTest.class);
 
     @Resource
     private RedissonClient redissonClient;
